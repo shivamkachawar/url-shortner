@@ -2,6 +2,8 @@ package com.shivam.urlshortner.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "urls")
 public class Url {
@@ -19,6 +21,39 @@ public class Url {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "click_count")
+    private Long clickCount = 0L;
+
+    @Column(name = "expiry_date")
+    private java.time.LocalDateTime expiryDate;
+
+    @Column(name = "created_at")
+    private java.time.LocalDateTime createdAt;
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDateTime expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public Long getClickCount() {
+        return clickCount;
+    }
+
+    public void setClickCount(Long clickCount) {
+        this.clickCount = clickCount;
+    }
 
     public User getUser() {
         return user;

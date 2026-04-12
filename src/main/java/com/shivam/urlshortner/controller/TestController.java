@@ -11,6 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:3000")
 public class TestController {
 
     private final UrlService urlService;
@@ -20,24 +21,18 @@ public class TestController {
     }
 
     @PostMapping("/shorten")
-    public ShortUrlResponse createShortUrl(@RequestBody Map<String, String> request) {
+    public Url createShortUrl(@RequestBody Map<String, String> body) {
 
-        String originalUrl = request.get("url");
+        String originalUrl = body.get("url");
+        String expiry = body.get("expiry"); // optional
 
-        // Validation
-        if (originalUrl == null || originalUrl.isEmpty()) {
-            throw new RuntimeException("URL cannot be empty");
+        java.time.LocalDateTime expiryDate = null;
+
+        if (expiry != null && !expiry.isEmpty()) {
+            expiryDate = java.time.LocalDateTime.parse(expiry);
         }
 
-        if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
-            throw new RuntimeException("Invalid URL format");
-        }
-
-        Url url = urlService.createShortUrl(originalUrl);
-
-        String shortUrl = "http://localhost:8080/api/" + url.getShortCode();
-
-        return new ShortUrlResponse(shortUrl);
+        return urlService.createShortUrl(originalUrl, expiryDate);
     }
     @GetMapping("/{shortCode}")
     public void redirect(@PathVariable String shortCode,
@@ -54,5 +49,17 @@ public class TestController {
     @GetMapping("/my-urls")
     public java.util.List<Url> getMyUrls() {
         return urlService.getUserUrls();
+    }
+    @DeleteMapping("/delete/{id}")
+    public String deleteUrl(@PathVariable Long id) {
+        urlService.deleteUrl(id);
+        return "Deleted successfully";
+    }
+    @PutMapping("/expiry/{id}")
+    public String updateExpiry(@PathVariable Long id,
+                               @RequestParam String expiry) {
+
+        urlService.updateExpiry(id, expiry);
+        return "Expiry updated";
     }
 }
