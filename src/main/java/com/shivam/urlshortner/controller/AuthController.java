@@ -3,6 +3,7 @@ package com.shivam.urlshortner.controller;
 import com.shivam.urlshortner.entity.User;
 import com.shivam.urlshortner.service.UserService;
 import com.shivam.urlshortner.util.JwtUtil;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -42,5 +43,12 @@ public class AuthController {
         response.put("token", token);
 
         return response;
+    }
+    @GetMapping("/me")
+    public String getCurrentUser() {
+        return (String) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
     }
 }

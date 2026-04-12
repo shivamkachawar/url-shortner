@@ -1,19 +1,28 @@
 package com.shivam.urlshortner.controller;
 
-import com.shivam.urlshortner.dto.ShortUrlResponse;
+import com.shivam.urlshortner.entity.Click;
 import com.shivam.urlshortner.entity.Url;
+import com.shivam.urlshortner.repository.ClickRepository;
+import com.shivam.urlshortner.repository.UrlRepository;
 import com.shivam.urlshortner.service.UrlService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class TestController {
+    @Autowired
+    private ClickRepository clickRepository;
 
+    @Autowired
+    private UrlRepository urlRepository;
     private final UrlService urlService;
 
     public TestController(UrlService urlService) {
@@ -24,15 +33,19 @@ public class TestController {
     public Url createShortUrl(@RequestBody Map<String, String> body) {
 
         String originalUrl = body.get("url");
-        String expiry = body.get("expiry"); // optional
+        String expiry = body.get("expiry");
+        String customCode = body.get("customCode"); // 🔥 NEW
 
-        java.time.LocalDateTime expiryDate = null;
+        LocalDateTime expiryDate = null;
 
-        if (expiry != null && !expiry.isEmpty()) {
-            expiryDate = java.time.LocalDateTime.parse(expiry);
+        if (expiry != null && !expiry.trim().isEmpty()) {
+            expiryDate = LocalDateTime.parse(
+                    expiry,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+            );
         }
 
-        return urlService.createShortUrl(originalUrl, expiryDate);
+        return urlService.createShortUrl(originalUrl, expiryDate, customCode);
     }
     @GetMapping("/{shortCode}")
     public void redirect(@PathVariable String shortCode,
@@ -41,7 +54,37 @@ public class TestController {
         Url url = urlService.getOriginalUrl(shortCode);
 
         if (url != null) {
+
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+            // 🔥 1. Check expiry
+            if (url.getExpiryDate() != null &&
+                    url.getExpiryDate().isBefore(now)) {
+
+                response.setStatus(HttpServletResponse.SC_GONE);
+                response.getWriter().write("Link expired");
+                return;
+            }
+
+            // 🔥 2. Increment click count safely
+            Long current = url.getClickCount() == null ? 0 : url.getClickCount();
+            url.setClickCount(current + 1);
+
+            // 🔥 3. Update last accessed
+            url.setLastAccessedAt(now);
+
+            // 🔥 4. Save click event
+            Click click = new Click();
+            click.setUrl(url);
+            click.setClickedAt(now);
+            clickRepository.save(click);
+
+            // 🔥 5. Save URL
+            urlRepository.save(url);
+
+            // 🔥 6. Redirect
             response.sendRedirect(url.getOriginalUrl());
+
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }

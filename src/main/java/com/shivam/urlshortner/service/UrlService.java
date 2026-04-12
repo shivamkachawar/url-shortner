@@ -5,8 +5,10 @@ import com.shivam.urlshortner.entity.User;
 import com.shivam.urlshortner.repository.UrlRepository;
 import com.shivam.urlshortner.repository.UserRepository;
 import com.shivam.urlshortner.util.Base62Util;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -20,9 +22,11 @@ public class UrlService {
         this.userRepository = userRepository;
     }
 
-    public Url createShortUrl(String originalUrl, java.time.LocalDateTime expiryDate) {
+    public Url createShortUrl(String originalUrl,
+                              LocalDateTime expiryDate,
+                              String customCode) {
 
-        String username = (String) org.springframework.security.core.context.SecurityContextHolder
+        String username = (String) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
@@ -30,38 +34,51 @@ public class UrlService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 🔥 Use single time reference (important)
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
 
         Url url = new Url();
         url.setOriginalUrl(originalUrl);
         url.setUser(user);
         url.setCreatedAt(now);
 
-        // 🔥 Expiry logic with validation
+        // 🔥 Expiry
         if (expiryDate != null) {
-
             if (expiryDate.isBefore(now)) {
                 throw new RuntimeException("Expiry cannot be in the past");
             }
-
-            // normalize
-            expiryDate = expiryDate.withSecond(0).withNano(0);
-
-            url.setExpiryDate(expiryDate);
-
+            url.setExpiryDate(expiryDate.withSecond(0).withNano(0));
         } else {
             url.setExpiryDate(now.plusDays(7));
         }
 
-        // Step 1: Save to get ID
+        // 🔥 Custom short code logic
+        if (customCode != null && !customCode.trim().isEmpty()) {
+
+            // check duplicate
+            if (urlRepository.findByShortCode(customCode).isPresent()) {
+                throw new RuntimeException("Custom URL already exists");
+            }
+
+            if (customCode != null && !customCode.trim().isEmpty()) {
+
+                Url savedUrl = urlRepository.save(url);
+
+                String baseCode = Base62Util.encode(savedUrl.getId());
+
+                String finalCode = customCode + "-" + baseCode;
+
+                savedUrl.setShortCode(finalCode);
+
+                return urlRepository.save(savedUrl);
+            }
+        }
+
+        // 🔥 Default Base62 flow
         Url savedUrl = urlRepository.save(url);
 
-        // Step 2: Generate short code
         String shortCode = Base62Util.encode(savedUrl.getId());
         savedUrl.setShortCode(shortCode);
 
-        // Step 3: Save again
         return urlRepository.save(savedUrl);
     }
 

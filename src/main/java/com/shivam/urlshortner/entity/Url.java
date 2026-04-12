@@ -31,6 +31,17 @@ public class Url {
     @Column(name = "created_at")
     private java.time.LocalDateTime createdAt;
 
+    @Column(name = "last_accessed_at")
+    private java.time.LocalDateTime lastAccessedAt;
+
+    public LocalDateTime getLastAccessedAt() {
+        return lastAccessedAt;
+    }
+
+    public void setLastAccessedAt(LocalDateTime lastAccessedAt) {
+        this.lastAccessedAt = lastAccessedAt;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
