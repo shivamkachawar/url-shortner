@@ -1,16 +1,18 @@
+# -------- STAGE 1: Build --------
 FROM maven:3.8.5-openjdk-17 AS build
-COPY . . 
+
+WORKDIR /app
+COPY . .
 RUN mvn clean package -DskipTests
 
-# Use lightweight Java image
-FROM openjdk:17.0.1-jdk-slim
+# -------- STAGE 2: Run --------
+FROM eclipse-temurin:17-jdk
 
-# Set working directory
 WORKDIR /app
 
-# Copy jar file
-COPY target/*.jar app.jar
+# ✅ Copy jar from build stage (IMPORTANT FIX)
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-# Run app
 ENTRYPOINT ["java", "-jar", "app.jar"]
