@@ -20,10 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "https://url-shortener-frontend-kappa-blond.vercel.app"
-})
+@CrossOrigin(origins = "*")
 public class TestController {
     @Autowired
     private ClickRepository clickRepository;
