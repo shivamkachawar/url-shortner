@@ -17,6 +17,12 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // ✅ IMPORTANT: Allow preflight (CORS) requests
+        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
@@ -25,7 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             try {
                 String username = JwtUtil.validateToken(token);
-                String role = JwtUtil.extractRole(token); // 🔥 ADD THIS
+                String role = JwtUtil.extractRole(token);
 
                 var authorities = java.util.List.of(
                         new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)
@@ -36,10 +42,6 @@ public class JwtFilter extends OncePerRequestFilter {
                         null,
                         authorities
                 );
-
-                org.springframework.security.core.context.SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(auth);
 
                 org.springframework.security.core.context.SecurityContextHolder
                         .getContext()
