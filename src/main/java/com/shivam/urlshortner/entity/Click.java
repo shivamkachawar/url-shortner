@@ -1,4 +1,5 @@
 package com.shivam.urlshortner.entity;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -8,6 +9,14 @@ public class Click {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "url_id")
+    private Url url;
+
+    private LocalDateTime clickedAt;
+
+    // getters & setters
 
     public Url getUrl() {
         return url;
@@ -24,12 +33,4 @@ public class Click {
     public void setClickedAt(LocalDateTime clickedAt) {
         this.clickedAt = clickedAt;
     }
-
-    @ManyToOne
-    @JoinColumn(name = "url_id")
-    private Url url;
-
-    private LocalDateTime clickedAt;
-
-    // getters & setters
 }

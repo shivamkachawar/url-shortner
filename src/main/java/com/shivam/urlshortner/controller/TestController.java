@@ -5,7 +5,11 @@ import com.shivam.urlshortner.entity.Url;
 import com.shivam.urlshortner.repository.ClickRepository;
 import com.shivam.urlshortner.repository.UrlRepository;
 import com.shivam.urlshortner.service.UrlService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +28,9 @@ public class TestController {
     @Autowired
     private UrlRepository urlRepository;
     private final UrlService urlService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public TestController(UrlService urlService) {
         this.urlService = urlService;
@@ -48,6 +55,7 @@ public class TestController {
         return urlService.createShortUrl(originalUrl, expiryDate, customCode);
     }
     @GetMapping("/{shortCode}")
+    @Transactional
     public void redirect(@PathVariable String shortCode,
                          HttpServletResponse response) throws IOException {
 
@@ -57,7 +65,7 @@ public class TestController {
 
             java.time.LocalDateTime now = java.time.LocalDateTime.now();
 
-            // 🔥 1. Check expiry
+            // 🔥 1. Expiry check
             if (url.getExpiryDate() != null &&
                     url.getExpiryDate().isBefore(now)) {
 
@@ -66,23 +74,16 @@ public class TestController {
                 return;
             }
 
-            // 🔥 2. Increment click count safely
-            Long current = url.getClickCount() == null ? 0 : url.getClickCount();
-            url.setClickCount(current + 1);
+            // 🔥 2. Increment click (DIRECT DB UPDATE → NO DOUBLE COUNT)
+            urlRepository.incrementClick(url.getId(), now);
 
-            // 🔥 3. Update last accessed
-            url.setLastAccessedAt(now);
+            // 🔥 3. Save click event (analytics)
+//            Click click = new Click();
+//            click.setUrl(url);
+//            click.setClickedAt(now);
+//            clickRepository.save(click);
 
-            // 🔥 4. Save click event
-            Click click = new Click();
-            click.setUrl(url);
-            click.setClickedAt(now);
-            clickRepository.save(click);
-
-            // 🔥 5. Save URL
-            urlRepository.save(url);
-
-            // 🔥 6. Redirect
+            // 🔥 4. Redirect
             response.sendRedirect(url.getOriginalUrl());
 
         } else {

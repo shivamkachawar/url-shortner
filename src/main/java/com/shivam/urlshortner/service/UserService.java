@@ -53,4 +53,14 @@ public class UserService {
 
         return user;
     }
+    public User registerAdmin(String username, String password) {
+
+        User user = new User();
+        user.setUsername(username);
+
+        user.setPassword(passwordEncoder.encode(password)); // 🔥 correct hash
+        user.setRole("ADMIN");
+
+        return userRepository.save(user);
+    }
 }

@@ -25,6 +25,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll() // allow login/register
                         .requestMatchers("/api/{shortCode}").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated() // everything else secured
                 )
                 .addFilterBefore(new JwtFilter(),

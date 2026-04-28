@@ -35,9 +35,12 @@ public class AuthController {
         String username = request.get("username");
         String password = request.get("password");
 
-        userService.loginUser(username, password);
+        User user = userService.loginUser(username, password);
 
-        String token = JwtUtil.generateToken(username);
+        String token = JwtUtil.generateToken(
+                user.getUsername(),
+                user.getRole()
+        );
 
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
@@ -45,10 +48,29 @@ public class AuthController {
         return response;
     }
     @GetMapping("/me")
-    public String getCurrentUser() {
-        return (String) SecurityContextHolder
+    public Map<String, String> getCurrentUser() {
+
+        String username = (String) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
+
+        String role = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("username", username);
+        response.put("role", role);
+
+        return response;
+    }
+    @PostMapping("/create-admin")
+    public User createAdmin() {
+        return userService.registerAdmin("Admin", "Admin@123");
     }
 }

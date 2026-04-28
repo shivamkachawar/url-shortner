@@ -36,6 +36,13 @@ public class UrlService {
 
         LocalDateTime now = LocalDateTime.now();
 
+//        // 🔥 1. GLOBAL CHECK (important change)
+//        Optional<Url> existing = urlRepository.findByOriginalUrl(originalUrl);
+//
+//        if (existing.isPresent()) {
+//            return existing.get(); // return same short URL
+//        }
+
         Url url = new Url();
         url.setOriginalUrl(originalUrl);
         url.setUser(user);
@@ -48,32 +55,27 @@ public class UrlService {
             }
             url.setExpiryDate(expiryDate.withSecond(0).withNano(0));
         } else {
-            url.setExpiryDate(now.plusDays(7));
+            url.setExpiryDate(null);
         }
 
-        // 🔥 Custom short code logic
+        // 🔥 Custom short code
         if (customCode != null && !customCode.trim().isEmpty()) {
 
-            // check duplicate
             if (urlRepository.findByShortCode(customCode).isPresent()) {
                 throw new RuntimeException("Custom URL already exists");
             }
 
-            if (customCode != null && !customCode.trim().isEmpty()) {
+            Url savedUrl = urlRepository.save(url);
 
-                Url savedUrl = urlRepository.save(url);
+            String baseCode = Base62Util.encode(savedUrl.getId());
+            String finalCode = customCode + "-" + baseCode;
 
-                String baseCode = Base62Util.encode(savedUrl.getId());
+            savedUrl.setShortCode(finalCode);
 
-                String finalCode = customCode + "-" + baseCode;
-
-                savedUrl.setShortCode(finalCode);
-
-                return urlRepository.save(savedUrl);
-            }
+            return urlRepository.save(savedUrl);
         }
 
-        // 🔥 Default Base62 flow
+        // 🔥 Default flow
         Url savedUrl = urlRepository.save(url);
 
         String shortCode = Base62Util.encode(savedUrl.getId());
@@ -83,26 +85,7 @@ public class UrlService {
     }
 
     public Url getOriginalUrl(String shortCode) {
-
-        Optional<Url> optionalUrl = urlRepository.findByShortCode(shortCode);
-
-        if (optionalUrl.isPresent()) {
-
-            Url url = optionalUrl.get();
-
-            // 🔥 increment click count
-            if (url.getClickCount() == null) {
-                url.setClickCount(0L);
-            }
-
-            url.setClickCount(url.getClickCount() + 1);
-
-            urlRepository.save(url);
-
-            return url;
-        }
-
-        return null;
+        return urlRepository.findByShortCode(shortCode).orElse(null);
     }
     public java.util.List<Url> getUserUrls() {
 
