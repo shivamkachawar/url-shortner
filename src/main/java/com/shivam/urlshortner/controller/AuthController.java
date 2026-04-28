@@ -14,7 +14,7 @@ import java.util.Map;
 @RequestMapping("/auth")
 @CrossOrigin(origins = {
         "http://localhost:3000",
-        "https://your-vercel-app.vercel.app"
+        "https://url-shortener-frontend-kappa-blond.vercel.app"
 })
 public class AuthController {
 
