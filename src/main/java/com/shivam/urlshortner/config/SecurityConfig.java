@@ -51,7 +51,7 @@ public class SecurityConfig {
         // ✅ IMPORTANT: add your Vercel URL here
         config.setAllowedOrigins(java.util.List.of(
                 "http://localhost:3000",
-                "https://url-shortener-frontend-kappa-blond.vercel.app"
+                "https://snip--ly.vercel.app"
         ));
 
         config.setAllowedMethods(java.util.List.of(
