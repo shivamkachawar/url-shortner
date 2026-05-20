@@ -57,11 +57,23 @@ public class UrlService {
         // 🔥 Custom short code
         if (customCode != null && !customCode.trim().isEmpty()) {
 
-            if (urlRepository.findByShortCode(customCode).isPresent()) {
-                throw new RuntimeException("Custom URL already exists");
-            }
+            String finalCode;
 
-            url.setShortCode(customCode);
+            do {
+
+                String randomPart =
+                        Base62Util.generateRandomCode(6);
+
+                finalCode =
+                        customCode + "-" + randomPart;
+
+            } while (
+                    urlRepository
+                            .findByShortCode(finalCode)
+                            .isPresent()
+            );
+
+            url.setShortCode(finalCode);
 
             return urlRepository.save(url);
         }
