@@ -36,13 +36,6 @@ public class UrlService {
 
         LocalDateTime now = LocalDateTime.now();
 
-//        // 🔥 1. GLOBAL CHECK (important change)
-//        Optional<Url> existing = urlRepository.findByOriginalUrl(originalUrl);
-//
-//        if (existing.isPresent()) {
-//            return existing.get(); // return same short URL
-//        }
-
         Url url = new Url();
         url.setOriginalUrl(originalUrl);
         url.setUser(user);
@@ -50,10 +43,13 @@ public class UrlService {
 
         // 🔥 Expiry
         if (expiryDate != null) {
+
             if (expiryDate.isBefore(now)) {
                 throw new RuntimeException("Expiry cannot be in the past");
             }
+
             url.setExpiryDate(expiryDate.withSecond(0).withNano(0));
+
         } else {
             url.setExpiryDate(null);
         }
@@ -65,23 +61,21 @@ public class UrlService {
                 throw new RuntimeException("Custom URL already exists");
             }
 
-            Url savedUrl = urlRepository.save(url);
+            url.setShortCode(customCode);
 
-            String baseCode = Base62Util.encode(savedUrl.getId());
-            String finalCode = customCode + "-" + baseCode;
-
-            savedUrl.setShortCode(finalCode);
-
-            return urlRepository.save(savedUrl);
+            return urlRepository.save(url);
         }
 
-        // 🔥 Default flow
-        Url savedUrl = urlRepository.save(url);
+        // 🔥 Random Base62 flow
+        String shortCode;
 
-        String shortCode = Base62Util.encode(savedUrl.getId());
-        savedUrl.setShortCode(shortCode);
+        do {
+            shortCode = Base62Util.generateRandomCode(6);
+        } while (urlRepository.findByShortCode(shortCode).isPresent());
 
-        return urlRepository.save(savedUrl);
+        url.setShortCode(shortCode);
+
+        return urlRepository.save(url);
     }
 
     public Url getOriginalUrl(String shortCode) {

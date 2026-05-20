@@ -15,7 +15,7 @@ public class Url {
     @Column(name = "original_url")
     private String originalUrl;
 
-    @Column(name = "short_code")
+    @Column(name = "short_code", unique = true, nullable = false)
     private String shortCode;
 
     @ManyToOne
