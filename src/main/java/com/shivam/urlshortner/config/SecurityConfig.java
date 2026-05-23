@@ -33,7 +33,6 @@ public class SecurityConfig {
 
                         // ✅ admin
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
                         // ✅ everything else
                         .anyRequest().authenticated()
                 )
