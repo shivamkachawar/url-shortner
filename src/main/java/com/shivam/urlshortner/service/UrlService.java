@@ -8,8 +8,7 @@ import com.shivam.urlshortner.util.Base62Util;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.time.Instant;
 
 @Service
 public class UrlService {
@@ -23,7 +22,7 @@ public class UrlService {
     }
 
     public Url createShortUrl(String originalUrl,
-                              LocalDateTime expiryDate,
+                              Instant expiryDate,
                               String customCode) {
 
         String username = (String) SecurityContextHolder
@@ -34,7 +33,7 @@ public class UrlService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
 
         Url url = new Url();
         url.setOriginalUrl(originalUrl);
@@ -48,7 +47,7 @@ public class UrlService {
                 throw new RuntimeException("Expiry cannot be in the past");
             }
 
-            url.setExpiryDate(expiryDate.withSecond(0).withNano(0));
+            url.setExpiryDate(expiryDate);
 
         } else {
             url.setExpiryDate(null);
@@ -93,6 +92,7 @@ public class UrlService {
     public Url getOriginalUrl(String shortCode) {
         return urlRepository.findByShortCode(shortCode).orElse(null);
     }
+
     public java.util.List<Url> getUserUrls() {
 
         Object principal = org.springframework.security.core.context.SecurityContextHolder
@@ -104,9 +104,11 @@ public class UrlService {
 
         return urlRepository.findByUserUsername(username);
     }
+
     public void deleteUrl(Long id) {
         urlRepository.deleteById(id);
     }
+
     public void updateExpiry(Long id, String expiry) {
 
         Url url = urlRepository.findById(id)
@@ -116,21 +118,21 @@ public class UrlService {
             throw new RuntimeException("Expiry cannot be empty");
         }
 
-        java.time.LocalDateTime newExpiry;
+        Instant newExpiry;
 
         try {
-            newExpiry = java.time.LocalDateTime.parse(
-                    expiry,
-                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
-            );
+
+            newExpiry = Instant.parse(expiry);
+
         } catch (Exception e) {
+
             throw new RuntimeException("Invalid expiry format");
+
         }
-        if (newExpiry.isBefore(java.time.LocalDateTime.now())) {
+
+        if (newExpiry.isBefore(Instant.now())) {
             throw new RuntimeException("Expiry cannot be in the past");
         }
-        // Optional: normalize seconds
-        newExpiry = newExpiry.withSecond(0).withNano(0);
 
         url.setExpiryDate(newExpiry);
 

@@ -1,6 +1,8 @@
 package com.shivam.urlshortner.entity;
 
 import jakarta.persistence.*;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,13 +28,13 @@ public class Url {
     private Long clickCount = 0L;
 
     @Column(name = "expiry_date")
-    private LocalDateTime expiryDate;
+    private Instant expiryDate;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "last_accessed_at")
-    private LocalDateTime lastAccessedAt;
+    private Instant lastAccessedAt;
 
     // 🔥 ADD THIS (CRITICAL)
     @OneToMany(mappedBy = "url", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -48,27 +50,27 @@ public class Url {
         this.clicks = clicks;
     }
 
-    public LocalDateTime getLastAccessedAt() {
+    public Instant getLastAccessedAt() {
         return lastAccessedAt;
     }
 
-    public void setLastAccessedAt(LocalDateTime lastAccessedAt) {
+    public void setLastAccessedAt(Instant lastAccessedAt) {
         this.lastAccessedAt = lastAccessedAt;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getExpiryDate() {
+    public Instant getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(LocalDateTime expiryDate) {
+    public void setExpiryDate(Instant expiryDate) {
         this.expiryDate = expiryDate;
     }
 
