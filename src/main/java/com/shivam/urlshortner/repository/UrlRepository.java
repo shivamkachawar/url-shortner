@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +28,7 @@ public interface UrlRepository extends JpaRepository<Url, Long> {
 
     @Modifying
     @Query("UPDATE Url u SET u.clickCount = u.clickCount + 1, u.lastAccessedAt = :now WHERE u.id = :id")
-    void incrementClick(@Param("id") Long id, @Param("now") LocalDateTime now);
+    void incrementClick(@Param("id") Long id, @Param("now") Instant now);
 
     @Query("SELECT COALESCE(SUM(u.clickCount), 0) FROM Url u")
     Long getTotalClicks();
