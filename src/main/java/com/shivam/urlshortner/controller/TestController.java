@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -43,13 +44,10 @@ public class TestController {
         String expiry = body.get("expiry");
         String customCode = body.get("customCode"); // 🔥 NEW
 
-        LocalDateTime expiryDate = null;
+        Instant expiryDate = null;
 
         if (expiry != null && !expiry.trim().isEmpty()) {
-            expiryDate = LocalDateTime.parse(
-                    expiry,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
-            );
+            expiryDate = Instant.parse(expiry);
         }
 
         return urlService.createShortUrl(originalUrl, expiryDate, customCode);
@@ -63,7 +61,7 @@ public class TestController {
 
         if (url != null) {
 
-            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            Instant now = Instant.now();
 
             // 🔥 1. Expiry check
             if (url.getExpiryDate() != null &&
