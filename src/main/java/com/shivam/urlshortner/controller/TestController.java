@@ -67,8 +67,7 @@ public class TestController {
             if (url.getExpiryDate() != null &&
                     url.getExpiryDate().isBefore(now)) {
 
-                response.setStatus(HttpServletResponse.SC_GONE);
-                response.getWriter().write("Link expired");
+                response.sendRedirect("https://snip--ly.vercel.app/expired");
                 return;
             }
 
