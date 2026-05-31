@@ -10,14 +10,12 @@ import org.springframework.stereotype.Service;
 public class RedisCacheService {
 
     private final StringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public RedisCacheService(
-            StringRedisTemplate redisTemplate,
-            ObjectMapper objectMapper
+            StringRedisTemplate redisTemplate
     ) {
         this.redisTemplate = redisTemplate;
-        this.objectMapper = objectMapper;
     }
 
     public void save(String shortCode, CachedUrl cachedUrl) {
