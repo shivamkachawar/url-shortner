@@ -79,7 +79,7 @@ public class OAuthSuccessHandler
                 );
 
         response.sendRedirect(
-                "https://snip--ly.vercel.app/oauth-success?token="
+                "https://snip--ly.vercel.app/?oauthToken="
                         + java.net.URLEncoder.encode(
                         token,
                         java.nio.charset.StandardCharsets.UTF_8
