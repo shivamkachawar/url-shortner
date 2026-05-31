@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class RedisCacheService {
@@ -29,8 +31,26 @@ public class RedisCacheService {
             String json =
                     objectMapper.writeValueAsString(cachedUrl);
 
-            redisTemplate.opsForValue()
-                    .set(shortCode, json);
+            if (cachedUrl.getExpiryDate() != null) {
+
+                Duration ttl = Duration.between(
+                        Instant.now(),
+                        cachedUrl.getExpiryDate()
+                );
+
+                if (!ttl.isNegative() && !ttl.isZero()) {
+
+                    redisTemplate.opsForValue()
+                            .set(shortCode, json, ttl);
+
+                }
+
+            } else {
+
+                redisTemplate.opsForValue()
+                        .set(shortCode, json);
+
+            }
 
         } catch (JsonProcessingException e) {
 

@@ -115,23 +115,11 @@ public class UrlService {
 
     public Url getOriginalUrl(String shortCode) {
 
-        long start = System.currentTimeMillis();
-
         CachedUrl cachedUrl =
                 redisCacheService.get(shortCode);
 
-        long redisTime = System.currentTimeMillis() - start;
 
         if (cachedUrl != null) {
-
-            System.out.println(
-                    "REDIS HIT: "
-                            + shortCode
-                            + " | lookup took "
-                            + redisTime
-                            + " ms"
-            );
-
             Url url = new Url();
 
             url.setShortCode(shortCode);
@@ -141,28 +129,8 @@ public class UrlService {
             return url;
         }
 
-        System.out.println(
-                "REDIS MISS: "
-                        + shortCode
-                        + " | lookup took "
-                        + redisTime
-                        + " ms"
-        );
-
-        long dbStart = System.currentTimeMillis();
-
         Url url = urlRepository.findByShortCode(shortCode)
                 .orElse(null);
-
-        long dbTime = System.currentTimeMillis() - dbStart;
-
-        System.out.println(
-                "POSTGRES LOOKUP: "
-                        + shortCode
-                        + " | lookup took "
-                        + dbTime
-                        + " ms"
-        );
 
         if (url != null) {
 
@@ -196,7 +164,13 @@ public class UrlService {
     }
 
     public void deleteUrl(Long id) {
-        urlRepository.deleteById(id);
+
+        Url url = urlRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("URL not found"));
+
+        redisCacheService.delete(url.getShortCode());
+
+        urlRepository.delete(url);
     }
 
     public void updateExpiry(Long id, String expiry) {
