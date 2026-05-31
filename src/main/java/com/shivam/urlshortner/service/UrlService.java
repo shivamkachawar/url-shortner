@@ -16,12 +16,12 @@ public class UrlService {
 
     private final UrlRepository urlRepository;
     private final UserRepository userRepository;
-    private final RedisCacheService redisCacheService;
+    //private final RedisCacheService redisCacheService;
 
-    public UrlService(UrlRepository urlRepository, UserRepository userRepository, RedisCacheService redisCacheService) {
+    public UrlService(UrlRepository urlRepository, UserRepository userRepository) {
         this.urlRepository = urlRepository;
         this.userRepository = userRepository;
-        this.redisCacheService = redisCacheService;
+        //this.redisCacheService = redisCacheService;
     }
 
     public Url createShortUrl(String originalUrl,
@@ -79,13 +79,13 @@ public class UrlService {
 
             Url savedUrl = urlRepository.save(url);
 
-            redisCacheService.save(
-                    savedUrl.getShortCode(),
-                    new CachedUrl(
-                            savedUrl.getOriginalUrl(),
-                            savedUrl.getExpiryDate()
-                    )
-            );
+//            redisCacheService.save(
+//                    savedUrl.getShortCode(),
+//                    new CachedUrl(
+//                            savedUrl.getOriginalUrl(),
+//                            savedUrl.getExpiryDate()
+//                    )
+//            );
 
             return savedUrl;
         }
@@ -101,13 +101,13 @@ public class UrlService {
 
         Url savedUrl = urlRepository.save(url);
 
-        redisCacheService.save(
-                savedUrl.getShortCode(),
-                new CachedUrl(
-                        savedUrl.getOriginalUrl(),
-                        savedUrl.getExpiryDate()
-                )
-        );
+//        redisCacheService.save(
+//                savedUrl.getShortCode(),
+//                new CachedUrl(
+//                        savedUrl.getOriginalUrl(),
+//                        savedUrl.getExpiryDate()
+//                )
+//        );
 
         return savedUrl;
     }
