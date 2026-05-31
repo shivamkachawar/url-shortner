@@ -7,6 +7,7 @@ import com.shivam.urlshortner.repository.UserRepository;
 import com.shivam.urlshortner.util.Base62Util;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.shivam.urlshortner.dto.CachedUrl;
 
 import java.time.Instant;
 
@@ -15,10 +16,12 @@ public class UrlService {
 
     private final UrlRepository urlRepository;
     private final UserRepository userRepository;
+    private final RedisCacheService redisCacheService;
 
-    public UrlService(UrlRepository urlRepository, UserRepository userRepository) {
+    public UrlService(UrlRepository urlRepository, UserRepository userRepository, RedisCacheService redisCacheService) {
         this.urlRepository = urlRepository;
         this.userRepository = userRepository;
+        this.redisCacheService = redisCacheService;
     }
 
     public Url createShortUrl(String originalUrl,
@@ -74,7 +77,17 @@ public class UrlService {
 
             url.setShortCode(finalCode);
 
-            return urlRepository.save(url);
+            Url savedUrl = urlRepository.save(url);
+
+            redisCacheService.save(
+                    savedUrl.getShortCode(),
+                    new CachedUrl(
+                            savedUrl.getOriginalUrl(),
+                            savedUrl.getExpiryDate()
+                    )
+            );
+
+            return savedUrl;
         }
 
         // 🔥 Random Base62 flow
@@ -86,7 +99,17 @@ public class UrlService {
 
         url.setShortCode(shortCode);
 
-        return urlRepository.save(url);
+        Url savedUrl = urlRepository.save(url);
+
+        redisCacheService.save(
+                savedUrl.getShortCode(),
+                new CachedUrl(
+                        savedUrl.getOriginalUrl(),
+                        savedUrl.getExpiryDate()
+                )
+        );
+
+        return savedUrl;
     }
 
     public Url getOriginalUrl(String shortCode) {
