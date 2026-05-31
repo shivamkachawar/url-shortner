@@ -48,13 +48,31 @@ public class UserService {
 
         return userRepository.save(user);
     }
-    public User loginUser(String username, String password) {
+    public User loginUser(String usernameOrEmail,
+                          String password) {
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user;
 
-        // compare password
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (usernameOrEmail.contains("@")) {
+
+            user = userRepository
+                    .findByEmail(usernameOrEmail)
+                    .orElseThrow(() ->
+                            new RuntimeException("User not found"));
+
+        } else {
+
+            user = userRepository
+                    .findByUsername(usernameOrEmail)
+                    .orElseThrow(() ->
+                            new RuntimeException("User not found"));
+        }
+
+        if (!passwordEncoder.matches(
+                password,
+                user.getPassword()
+        )) {
+
             throw new RuntimeException("Invalid password");
         }
 
