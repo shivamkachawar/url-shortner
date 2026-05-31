@@ -72,8 +72,18 @@ public class OAuthSuccessHandler
             );
         }
 
-        response.getWriter().write(
-                "Google Login Success: " + email
+        String token =
+                com.shivam.urlshortner.util.JwtUtil.generateToken(
+                        user.getUsername(),
+                        user.getRole()
+                );
+
+        response.sendRedirect(
+                "https://snip--ly.vercel.app/oauth-success?token="
+                        + java.net.URLEncoder.encode(
+                        token,
+                        java.nio.charset.StandardCharsets.UTF_8
+                )
         );
     }
 }
