@@ -5,12 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shivam.urlshortner.dto.CachedUrl;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 @Service
 public class RedisCacheService {
 
     private final StringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     public RedisCacheService(
             StringRedisTemplate redisTemplate
