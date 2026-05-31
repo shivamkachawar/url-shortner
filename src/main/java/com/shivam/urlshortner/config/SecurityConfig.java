@@ -1,6 +1,7 @@
 package com.shivam.urlshortner.config;
 
 import com.shivam.urlshortner.filter.JwtFilter;
+import com.shivam.urlshortner.security.OAuthSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,7 +11,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 public class SecurityConfig {
-
+    private final OAuthSuccessHandler oauthSuccessHandler;
+    public SecurityConfig(
+            OAuthSuccessHandler oauthSuccessHandler
+    ) {
+        this.oauthSuccessHandler = oauthSuccessHandler;
+    }
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -34,8 +40,14 @@ public class SecurityConfig {
 
                         // ✅ admin
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers("/login/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
                         // ✅ everything else
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth -> oauth
+                        .successHandler(oauthSuccessHandler)
                 )
                 .addFilterBefore(new JwtFilter(),
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
