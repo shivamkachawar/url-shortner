@@ -72,7 +72,10 @@ public class TestController {
             }
 
             // 🔥 2. Increment click (DIRECT DB UPDATE → NO DOUBLE COUNT)
-            urlRepository.incrementClick(url.getId(), now);
+            urlRepository.incrementClickByShortCode(
+                    shortCode,
+                    now
+            );
 
             // 🔥 3. Save click event (analytics)
 //            Click click = new Click();

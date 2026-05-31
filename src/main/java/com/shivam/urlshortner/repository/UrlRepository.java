@@ -30,6 +30,18 @@ public interface UrlRepository extends JpaRepository<Url, Long> {
     @Query("UPDATE Url u SET u.clickCount = u.clickCount + 1, u.lastAccessedAt = :now WHERE u.id = :id")
     void incrementClick(@Param("id") Long id, @Param("now") Instant now);
 
+    @Modifying
+    @Query("""
+UPDATE Url u
+SET u.clickCount = u.clickCount + 1,
+    u.lastAccessedAt = :now
+WHERE u.shortCode = :shortCode
+""")
+    void incrementClickByShortCode(
+            @Param("shortCode") String shortCode,
+            @Param("now") Instant now
+    );
+
     @Query("SELECT COALESCE(SUM(u.clickCount), 0) FROM Url u")
     Long getTotalClicks();
 }
