@@ -30,6 +30,7 @@ public class SecurityConfig {
                         // ✅ public endpoints
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/{shortCode}").permitAll()
+                        .requestMatchers("/redis-test").permitAll()
 
                         // ✅ admin
                         .requestMatchers("/admin/**").hasRole("ADMIN")
