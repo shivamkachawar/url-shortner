@@ -18,11 +18,17 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(String username, String password) {
+    public User registerUser(String username, String email, String password) {
 
         // simple validation
         if (username == null || username.isEmpty()) {
             throw new RuntimeException("Username cannot be empty");
+        }
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("Email cannot be empty");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email already exists");
         }
 
         if (password == null || password.isEmpty()) {
@@ -36,6 +42,7 @@ public class UserService {
 
         User user = new User();
         user.setUsername(username);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("USER");
 

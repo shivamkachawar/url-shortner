@@ -25,9 +25,10 @@ public class AuthController {
     public User register(@RequestBody Map<String, String> request) {
 
         String username = request.get("username");
+        String email = request.get("email");
         String password = request.get("password");
 
-        return userService.registerUser(username, password);
+        return userService.registerUser(username, email, password);
     }
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> request) {
