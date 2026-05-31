@@ -115,12 +115,22 @@ public class UrlService {
 
     public Url getOriginalUrl(String shortCode) {
 
+        long start = System.currentTimeMillis();
+
         CachedUrl cachedUrl =
                 redisCacheService.get(shortCode);
 
+        long redisTime = System.currentTimeMillis() - start;
+
         if (cachedUrl != null) {
 
-            System.out.println("REDIS HIT: " + shortCode);
+            System.out.println(
+                    "REDIS HIT: "
+                            + shortCode
+                            + " | lookup took "
+                            + redisTime
+                            + " ms"
+            );
 
             Url url = new Url();
 
@@ -131,10 +141,46 @@ public class UrlService {
             return url;
         }
 
-        System.out.println("REDIS MISS: " + shortCode);
+        System.out.println(
+                "REDIS MISS: "
+                        + shortCode
+                        + " | lookup took "
+                        + redisTime
+                        + " ms"
+        );
 
-        return urlRepository.findByShortCode(shortCode)
+        long dbStart = System.currentTimeMillis();
+
+        Url url = urlRepository.findByShortCode(shortCode)
                 .orElse(null);
+
+        long dbTime = System.currentTimeMillis() - dbStart;
+
+        System.out.println(
+                "POSTGRES LOOKUP: "
+                        + shortCode
+                        + " | lookup took "
+                        + dbTime
+                        + " ms"
+        );
+
+        if (url != null) {
+
+            redisCacheService.save(
+                    url.getShortCode(),
+                    new CachedUrl(
+                            url.getOriginalUrl(),
+                            url.getExpiryDate()
+                    )
+            );
+
+            System.out.println(
+                    "CACHED IN REDIS: "
+                            + shortCode
+            );
+        }
+
+        return url;
     }
 
     public java.util.List<Url> getUserUrls() {
