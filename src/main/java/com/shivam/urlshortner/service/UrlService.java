@@ -114,7 +114,27 @@ public class UrlService {
     }
 
     public Url getOriginalUrl(String shortCode) {
-        return urlRepository.findByShortCode(shortCode).orElse(null);
+
+        CachedUrl cachedUrl =
+                redisCacheService.get(shortCode);
+
+        if (cachedUrl != null) {
+
+            System.out.println("REDIS HIT: " + shortCode);
+
+            Url url = new Url();
+
+            url.setShortCode(shortCode);
+            url.setOriginalUrl(cachedUrl.getOriginalUrl());
+            url.setExpiryDate(cachedUrl.getExpiryDate());
+
+            return url;
+        }
+
+        System.out.println("REDIS MISS: " + shortCode);
+
+        return urlRepository.findByShortCode(shortCode)
+                .orElse(null);
     }
 
     public java.util.List<Url> getUserUrls() {
