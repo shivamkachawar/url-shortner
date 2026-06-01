@@ -6,17 +6,21 @@ import org.springframework.stereotype.Component;
 import com.shivam.urlshortner.entity.User;
 import java.io.IOException;
 import java.util.UUID;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Component
 public class OAuthSuccessHandler
         implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public OAuthSuccessHandler(
-            UserRepository userRepository
+            UserRepository userRepository,
+            BCryptPasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -54,7 +58,9 @@ public class OAuthSuccessHandler
 
             // temporary password
             user.setPassword(
-                    java.util.UUID.randomUUID().toString()
+                    passwordEncoder.encode(
+                            java.util.UUID.randomUUID().toString()
+                    )
             );
 
             user.setRole("USER");
