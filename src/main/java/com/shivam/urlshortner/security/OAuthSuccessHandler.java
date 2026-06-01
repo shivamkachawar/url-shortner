@@ -1,6 +1,7 @@
 package com.shivam.urlshortner.security;
 
 import com.shivam.urlshortner.repository.UserRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import com.shivam.urlshortner.entity.User;
@@ -17,7 +18,7 @@ public class OAuthSuccessHandler
 
     public OAuthSuccessHandler(
             UserRepository userRepository,
-            BCryptPasswordEncoder passwordEncoder
+            @Lazy BCryptPasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
