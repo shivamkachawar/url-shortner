@@ -28,8 +28,7 @@ public class RedisCacheService {
 
         try {
 
-            String json =
-                    objectMapper.writeValueAsString(cachedUrl);
+            String json = objectMapper.writeValueAsString(cachedUrl);
 
             if (cachedUrl.getExpiryDate() != null) {
 
@@ -52,23 +51,21 @@ public class RedisCacheService {
 
             }
 
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
 
-            throw new RuntimeException(e);
+            System.out.println("⚠ Redis unavailable. Cache skipped.");
         }
     }
 
     public CachedUrl get(String shortCode) {
 
-        String json =
-                redisTemplate.opsForValue()
-                        .get(shortCode);
-
-        if (json == null) {
-            return null;
-        }
-
         try {
+
+            String json = redisTemplate.opsForValue().get(shortCode);
+
+            if (json == null) {
+                return null;
+            }
 
             return objectMapper.readValue(
                     json,
@@ -77,12 +74,17 @@ public class RedisCacheService {
 
         } catch (Exception e) {
 
+            System.out.println("⚠ Redis unavailable. Falling back to PostgreSQL.");
             return null;
         }
     }
 
     public void delete(String shortCode) {
 
-        redisTemplate.delete(shortCode);
+        try {
+            redisTemplate.delete(shortCode);
+        } catch (Exception e) {
+            System.out.println("⚠ Redis unavailable. Cache delete skipped.");
+        }
     }
 }

@@ -80,13 +80,17 @@ public class UrlService {
 
             Url savedUrl = urlRepository.save(url);
 
-            redisCacheService.save(
-                    savedUrl.getShortCode(),
-                    new CachedUrl(
-                            savedUrl.getOriginalUrl(),
-                            savedUrl.getExpiryDate()
-                    )
-            );
+            try {
+                redisCacheService.save(
+                        savedUrl.getShortCode(),
+                        new CachedUrl(
+                                savedUrl.getOriginalUrl(),
+                                savedUrl.getExpiryDate()
+                        )
+                );
+            } catch (Exception e) {
+                System.out.println("⚠ Redis unavailable. URL saved only in PostgreSQL.");
+            }
 
             return savedUrl;
         }
@@ -102,13 +106,17 @@ public class UrlService {
 
         Url savedUrl = urlRepository.save(url);
 
-        redisCacheService.save(
-                savedUrl.getShortCode(),
-                new CachedUrl(
-                        savedUrl.getOriginalUrl(),
-                        savedUrl.getExpiryDate()
-                )
-        );
+        try {
+            redisCacheService.save(
+                    savedUrl.getShortCode(),
+                    new CachedUrl(
+                            savedUrl.getOriginalUrl(),
+                            savedUrl.getExpiryDate()
+                    )
+            );
+        } catch (Exception e) {
+            System.out.println("⚠ Redis unavailable. URL saved only in PostgreSQL.");
+        }
 
         return savedUrl;
     }
